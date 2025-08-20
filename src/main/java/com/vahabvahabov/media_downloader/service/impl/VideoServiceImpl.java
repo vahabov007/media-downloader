@@ -53,6 +53,8 @@ public class VideoServiceImpl implements VideoService {
                 throw new IllegalStateException("A download is already in progress for this session.");
             }
 
+            Path tempCookiesFile = null;
+
             try {
                 logger.info("Validating request for session: {}", sessionId);
                 if (request.getUrl().length() > 200) {
@@ -61,9 +63,22 @@ public class VideoServiceImpl implements VideoService {
 
                 String platform = request.getPlatform();
                 String url = request.getUrl();
+                String cookies = request.getCookies(); // Yeni dəyişiklik: Cookies götürülür
+
+                // Cookies verilərsə, müvəqqəti fayl yaradın
+                if (cookies != null && !cookies.isEmpty()) {
+                    try {
+                        tempCookiesFile = Files.createTempFile("yt-dlp-cookies", ".txt");
+                        Files.writeString(tempCookiesFile, cookies);
+                        logger.info("Temporary cookies file created at: {}", tempCookiesFile);
+                    } catch (IOException e) {
+                        logger.error("Failed to create temporary cookies file", e);
+                        tempCookiesFile = null;
+                    }
+                }
 
                 logger.info("Fetching video name for session: {}, URL: {}", sessionId, url);
-                String title = getVideoName(url, platform);
+                String title = getVideoName(url, platform, tempCookiesFile); // Yeni dəyişiklik: cookies faylı ötürülür
 
                 File dir = new File(downloadDir);
                 if (!dir.exists()) dir.mkdirs();
@@ -104,7 +119,7 @@ public class VideoServiceImpl implements VideoService {
                     throw new InterruptedException("Download canceled");
                 }
 
-                int exitCode = executeDownload(format, finalFilePath, url, sessionId);
+                int exitCode = executeDownload(format, finalFilePath, url, sessionId, tempCookiesFile); // Yeni dəyişiklik: cookies faylı ötürülür
 
                 if (exitCode != 0) {
                     throw new RuntimeException("Download failed with exit code: " + exitCode);
@@ -132,11 +147,21 @@ public class VideoServiceImpl implements VideoService {
                 progressController.sendMessage(sessionId, "Error: " + e.getMessage());
                 deletePartialFiles(sessionId);
                 throw new CompletionException(e);
+            } finally {
+                // Müvəqqəti faylı silmək
+                if (tempCookiesFile != null) {
+                    try {
+                        Files.deleteIfExists(tempCookiesFile);
+                        logger.info("Temporary cookies file deleted: {}", tempCookiesFile);
+                    } catch (IOException e) {
+                        logger.error("Failed to delete temporary cookies file: {}", tempCookiesFile, e);
+                    }
+                }
             }
         }, executorService);
     }
 
-    private int executeDownload(String format, String finalFilePath, String url, String sessionId) {
+    private int executeDownload(String format, String finalFilePath, String url, String sessionId, Path cookiesFile) { // Yeni dəyişiklik: cookiesFile qəbul edir
         try {
             List<String> command = new ArrayList<>();
             command.add(ytDlpPath);
@@ -168,6 +193,12 @@ public class VideoServiceImpl implements VideoService {
             command.add("Merger:-strict -2");
             command.add("-o");
             command.add(finalFilePath);
+
+            // Yeni dəyişiklik: Cookies faylı əlavə edilir
+            if (cookiesFile != null) {
+                command.add("--cookies");
+                command.add(cookiesFile.toString());
+            }
 
             if (url.contains("youtube.com/shorts") || url.contains("youtube.com/playlist")) {
                 command.add("--no-playlist");
@@ -205,7 +236,7 @@ public class VideoServiceImpl implements VideoService {
         }
     }
 
-    private String getVideoName(String url, String platform) throws Exception {
+    private String getVideoName(String url, String platform, Path cookiesFile) throws Exception { // Yeni dəyişiklik: cookiesFile qəbul edir
         String printField = "instagram".equals(platform) ? "description" : "title";
 
         List<String> command = new ArrayList<>();
@@ -221,6 +252,13 @@ public class VideoServiceImpl implements VideoService {
         command.add("--print");
         command.add(printField);
         command.add("--skip-download");
+
+        // Yeni dəyişiklik: Cookies faylı əlavə edilir
+        if (cookiesFile != null) {
+            command.add("--cookies");
+            command.add(cookiesFile.toString());
+        }
+
         command.add(url);
 
         ProcessBuilder pb = new ProcessBuilder(command);
@@ -404,7 +442,13 @@ public class VideoServiceImpl implements VideoService {
 
     @Override
     public Map<String, Object> getMediaInfo(String url, String platform) {
+        Path tempCookiesFile = null;
         try {
+            // Placeholder for cookies logic if needed in getMediaInfo
+            // Since you haven't provided a way to send cookies for this method,
+            // we will not implement it here to avoid errors.
+            // If the user can send cookies, you would add the same logic as in downloadVideoAsync.
+
             StringBuilder jsonOutput = new StringBuilder();
             StringBuilder errorOutput = new StringBuilder();
 
@@ -466,12 +510,15 @@ public class VideoServiceImpl implements VideoService {
 
         } catch (Exception e) {
             throw new RuntimeException("Failed to retrieve media info: " + e.getMessage());
+        } finally {
+            if (tempCookiesFile != null) {
+                try {
+                    Files.deleteIfExists(tempCookiesFile);
+                    logger.info("Temporary cookies file deleted: {}", tempCookiesFile);
+                } catch (IOException e) {
+                    logger.error("Failed to delete temporary cookies file: {}", tempCookiesFile, e);
+                }
+            }
         }
-    }
-
-    private static class ProxyResult {
-        String proxy;
-        int exitCode;
-        String errorOutput;
     }
 }

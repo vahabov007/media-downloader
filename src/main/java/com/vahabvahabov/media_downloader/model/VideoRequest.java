@@ -7,4 +7,5 @@ public class VideoRequest {
     private String url;
     private String quality;
     private String platform;
+    private String cookies;
 }
