@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Media Downloader</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" type="image/png" href="/images/favicon.png" />
+</head>
+<body>
+
+<div class="container">
+    <h1>Media Downloader</h1>
+    <p class="subtitle">Download media from various platforms.</p>
+
+    <div class="platform-selector">
+        <button class="platform-btn active" data-platform="youtube">YouTube</button>
+        <button class="platform-btn" data-platform="instagram">Instagram</button>
+        <button class="platform-btn" data-platform="spotify">Spotify</button>
+    </div>
+
+    <div class="input-group">
+        <label for="url-input">Enter URL:</label>
+        <input type="text" id="url-input" placeholder="Enter YouTube URL..." maxlength="200"/>
+    </div>
+
+    <div class="input-group" id="quality-group">
+        <label for="quality-select">Select Quality:</label>
+        <select id="quality-select">
+            <option value="best">Best (Automatic)</option>
+            <option value="1080p">1080p</option>
+            <option value="720p">720p</option>
+            <option value="480p">480p</option>
+            <option value="360p">360p</option>
+            <option value="144p">144p</option>
+        </select>
+    </div>
+
+    <div class="button-group">
+        <button id="download-btn">Download</button>
+        <button id="info-btn">Info</button>
+    </div>
+
+    <div class="progress-container">
+        <div id="progress-wrapper" class="hidden">
+            <div id="progress-bar"></div>
+        </div>
+        <button id="delete-btn" class="delete-btn hidden">Cancel</button>
+    </div>
+
+    <div id="status-message"></div>
+</div>
+
+<div id="info-modal" class="modal">
+    <div class="modal-content info-message-box">
+        <span class="close-info-modal">&times;</span>
+        <h2>How to Use Media Downloader</h2>
+        <p>1. Select the platform (YouTube, Instagram, or Spotify) from the buttons above.</p>
+        <p>2. Enter the URL of the media you want to download in the input field.</p>
+        <p>3. (For YouTube only) Choose your preferred quality from the dropdown menu.</p>
+        <p>4. Click the "Download" button to start the process. You can cancel it using the "Cancel" button if needed.</p>
+        <p>5. Once the download is complete, the file will be prepared for you to save.</p>
+        <p>If you have any questions or encounter any issues, feel free to <a href="https://vahabvahabov.site" target="_blank">contact me</a> for support!</p>
+    </div>
+</div>
+
+<div id="error-modal" class="modal">
+    <div class="modal-content error-message-box">
+        <span class="close-error-modal">&times;</span>
+        <div class="error-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                 class="feather feather-alert-triangle">
+                <path d="M10.29 3.86L1.82 18.25C1.61 18.61 1.63 19.06 1.89 19.4L10.36 21.84C10.72 21.99 11.28 21.99 11.64 21.84L20.11 19.4C20.37 19.06 20.39 18.61 20.18 18.25L11.71 3.86C11.5 3.5 11.02 3.5 10.71 3.86Z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+        </div>
+        <p id="error-message-text"></p>
+    </div>
+</div>
+
+<div id="download-success-modal" class="modal">
+    <div class="modal-content success-card">
+        <span class="close-success-modal">&times;</span>
+
+        <div class="success-card-header">
+            <div class="success-icon-wrapper">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+            </div>
+            <p>Uploaded Successfully!</p>
+        </div>
+
+        <div class="success-card-body">
+            <div class="media-thumbnail-container">
+                <img id="downloaded-media-thumbnail" src="" alt="Thumbnail" class="media-thumbnail">
+            </div>
+            <p class="media-title" id="downloaded-media-title"></p>
+        </div>
+    </div>
+</div>
+
+<div id="coming-soon-modal" class="modal">
+    <div class="modal-content coming-soon-box">
+        <span class="close-coming-soon">&times;</span>
+        <h2>Coming Soon</h2>
+        <p>In Progress</p>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

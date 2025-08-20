@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  media-downloader-app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - YT_DLP_PATH=yt-dlp
+      - FFMPEG_PATH=ffmpeg
+      - DOWNLOAD_DIR=/app/downloaded_videos
