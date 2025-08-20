@@ -3,8 +3,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const videoUrlInput = document.getElementById('url-input');
     const qualitySelect = document.getElementById('quality-select');
     const qualityGroup = document.getElementById('quality-group');
-    const cookiesGroup = document.getElementById('cookies-group'); // YENİ: cookies grubu
-    const cookiesInput = document.getElementById('cookies-input'); // YENİ: cookies inputu
     const downloadBtn = document.getElementById('download-btn');
     const statusMessage = document.getElementById('status-message');
     const progressWrapper = document.getElementById('progress-wrapper');
@@ -64,7 +62,6 @@ document.addEventListener('DOMContentLoaded', () => {
     downloadBtn.addEventListener('click', async () => {
         const url = videoUrlInput.value.trim();
         const quality = (currentPlatform === 'youtube') ? qualitySelect.value : 'best';
-        const cookies = cookiesInput.value.trim(); // YENİ: Kukiləri daxil et
 
         if (!url || url.length > videoUrlInput.maxLength) {
             showErrorModal('Please enter a valid URL (max 200 characters).');
@@ -114,16 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const fileName = body.substring(18).trim();
                     statusMessage.style.display = 'none';
 
-                    // Info API çağırışı
-                    fetch(`/api/videos/info`, {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({
-                            url: url,
-                            platform: currentPlatform,
-                            cookies: cookies
-                        })
-                    })
+                    fetch(`/api/videos/info?fileName=${encodeURIComponent(fileName)}`)
                         .then(response => {
                             if (!response.ok) {
                                 throw new Error('Video info not found');
@@ -131,11 +119,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             return response.json();
                         })
                         .then(data => {
-                            showSuccessModal(data.title, data.thumbnail); // Thumbnail və Title üçün məlumat
+                            showSuccessModal(data.title, data.thumbnailUrl);
                         })
                         .catch(error => {
                             console.error('Failed to get video info:', error);
-                            showSuccessModal("Downloaded", null); // Məlumat tapılmasa default göstərin
                         })
                         .finally(() => {
                             isDownloading = false;
@@ -195,8 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({
                     url: url,
                     quality: quality,
-                    platform: currentPlatform,
-                    cookies: cookies // YENİ: Kukiləri back-endə göndər
+                    platform: currentPlatform
                 })
             }).catch(error => {
                 showErrorModal('Failed to start download: ' + error.message);
@@ -315,19 +301,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (platform === 'youtube') {
             color = '#ff0000';
             qualityGroup.style.display = 'block';
-            cookiesGroup.style.display = 'block'; // YENİ: YouTube üçün cookies göstər
         } else if (platform === 'instagram') {
             color = '#e6683c';
             qualityGroup.style.display = 'none';
-            cookiesGroup.style.display = 'none';
         } else if (platform === 'spotify') {
             color = '#1DB954';
             qualityGroup.style.display = 'none';
-            cookiesGroup.style.display = 'none';
         } else {
             color = '#fff';
             qualityGroup.style.display = 'block';
-            cookiesGroup.style.display = 'block';
         }
         container.style.boxShadow = `0 10px 30px ${color}40`;
         container.style.borderColor = `${color}20`;
