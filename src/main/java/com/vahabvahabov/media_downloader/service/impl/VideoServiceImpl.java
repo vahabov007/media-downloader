@@ -65,7 +65,6 @@ public class VideoServiceImpl implements VideoService {
                 String url = request.getUrl();
                 String cookies = request.getCookies(); // Yeni dəyişiklik: Cookies götürülür
 
-                // Cookies verilərsə, müvəqqəti fayl yaradın
                 if (cookies != null && !cookies.isEmpty()) {
                     try {
                         tempCookiesFile = Files.createTempFile("yt-dlp-cookies", ".txt");
@@ -194,7 +193,6 @@ public class VideoServiceImpl implements VideoService {
             command.add("-o");
             command.add(finalFilePath);
 
-            // Yeni dəyişiklik: Cookies faylı əlavə edilir
             if (cookiesFile != null) {
                 command.add("--cookies");
                 command.add(cookiesFile.toString());
@@ -253,7 +251,6 @@ public class VideoServiceImpl implements VideoService {
         command.add(printField);
         command.add("--skip-download");
 
-        // Yeni dəyişiklik: Cookies faylı əlavə edilir
         if (cookiesFile != null) {
             command.add("--cookies");
             command.add(cookiesFile.toString());
@@ -444,10 +441,6 @@ public class VideoServiceImpl implements VideoService {
     public Map<String, Object> getMediaInfo(String url, String platform) {
         Path tempCookiesFile = null;
         try {
-            // Placeholder for cookies logic if needed in getMediaInfo
-            // Since you haven't provided a way to send cookies for this method,
-            // we will not implement it here to avoid errors.
-            // If the user can send cookies, you would add the same logic as in downloadVideoAsync.
 
             StringBuilder jsonOutput = new StringBuilder();
             StringBuilder errorOutput = new StringBuilder();
@@ -469,7 +462,6 @@ public class VideoServiceImpl implements VideoService {
             ProcessBuilder pb = new ProcessBuilder(command);
             Process process = pb.start();
 
-            // Read stdout
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
